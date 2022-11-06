@@ -105,9 +105,7 @@ def play_game(n,thresh): # n is the length of the dimensions of the game and thr
         curr_player = not curr_player  #rotates between player and CPU
         
         if plays == n**2: # if people have played n^2 times, the whole board is filled.
-            won = "DRAW"  # it's a draw, and won is no longer "None", so while loop breaks
-
-        print(tttboard) # if game is not over or won, code goes back to while loop 
+            won = "DRAW"  # it's a draw, and won is no longer "None", so while loop breaks 
         
     # this runs after won has changed to either "X wins", "O wins", or "DRAW"    
     print(won)
@@ -285,23 +283,33 @@ def test(extracted):
     condi3 = [CPU, " ", CPU, CPU, " "]
 
     if extracted == condi1:
-        return [True, 0]
+        return True, 0
     elif extracted == condi2:
-        return [True, 2]
+        return True, 2
     elif extracted == condi3:
-        return [True,1]
+        return True, 1
+    else:
+        return False, -1
 
 def check_attack(tttboard,x,y,tar): # each function returns bool, x, y
-      if attack_check_rows(tttboard,x,y,tar):
-        return True
-      elif attack_check_columns(tttboard,x,y,tar):
-        return True
-      elif attack_check_right_diag(tttboard,x,y,tar):
-        return True
-      elif attack_check_left_diag(tttboard,x,y,tar):
-        return True
-      else: 
-        return False
+    acr, i, j = attack_check_rows(tttboard,x,y,tar)
+    if acr:
+        return True, i, j
+    
+    acc, i, j = attack_check_columns(tttboard,x,y,tar)
+    if acc:
+        return True, i, j
+
+    acrd, i, j = attack_check_right_diag(tttboard,x,y,tar)
+    if acrd:
+        return True, i, j
+
+    acld, i, j = attack_check_left_diag(tttboard,x,y,tar)
+    if acld:
+        return True, i, j
+    
+    return False, -1, -1
+
 
 def attack_check_rows(tttboard,x,y,tar):
     global curr_player
@@ -311,9 +319,10 @@ def attack_check_rows(tttboard,x,y,tar):
         extracted = []
         for j in range(i,i+tar): 
             extracted.append(tttboard[x][j])
-        if test(extracted)[0]:
-            away = test(extracted)[1]
-            return True, x, i+away            
+        lst, away = test(extracted)
+        if lst == True:
+            return x, i+away
+        return False, -1, -1
 
 def attack_check_columns(tttboard,x,y,tar):
     global curr_player
@@ -323,9 +332,10 @@ def attack_check_columns(tttboard,x,y,tar):
         extracted = []
         for j in range(i,i+tar):
             extracted.append(tttboard[j][y])
-        if test(extracted)[0]:
-            away = test(extracted)[1]
-            return True, i+away, y            
+        lst, away = test(extracted)
+        if lst == True:
+            return True, i+away, y    
+        return False, -1, -1
 
 def attack_check_right_diag(tttboard,x,y,tar):
     global curr_player
@@ -336,9 +346,10 @@ def attack_check_right_diag(tttboard,x,y,tar):
         extracted = []
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
-        if test(extracted)[0]:
-            away = test(extracted)[1]
+        lst, away = test(extracted)
+        if lst == True:
             return True, x-i+away, y-i+away 
+        return False, -1, -1
 
 def attack_check_left_diag(tttboard,x,y,tar):
     global curr_player
@@ -349,9 +360,10 @@ def attack_check_left_diag(tttboard,x,y,tar):
         extracted = []
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
-        if test(extracted)[0]:
-            away = test(extracted)[1]
+        lst, away = test(extracted)
+        if lst == True:
             return True, x+i+away, y-i+away
+        return False, -1, -1
 
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
