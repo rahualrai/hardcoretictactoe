@@ -43,7 +43,10 @@ def check_coord(x,n):
         return True
 
 def play_game(n,thresh): # n is the length of the dimensions of the game and thresh is the number in a row needed to win
-    global p1, CPU
+    global p1, CPU, prevx, prevy
+    prevy = 0
+    prevx = 0
+    p1 = [0]*n
     p1 = "O"
     CPU = "X"
     tttboard = [] # this keeps record of the board, either "X" or "O" or " "
@@ -84,6 +87,10 @@ def play_game(n,thresh): # n is the length of the dimensions of the game and thr
             x, y = CPU_next_move(tttboard) 
 
             tttboard[x][y] = CPU
+
+            
+            prevx = x
+            prevy = y
         
             if check_win(tttboard, x, y, thresh, CPU): # check if Y has won
                 draw_board(tttboard)
@@ -225,84 +232,14 @@ def CPU_next_move(tttboard): #Telling CPU where it can make a move/play
 
 def CPU_next_move(tttboard): #Telling CPU where it can make a move/play. returns the coords of the next move
     n = len(tttboard)
-    is_attack, pos = attack(tttboard)
+    is_attack, posx, posy = check_attack(tttboard, prevx, prevy, 5)
     if is_attack == True:
-        return pos # pos ---> x, y
+        return posx, posy # pos ---> x, y
     else:
-        n = len(tttboard)
-        for i in range(n):
-            for j in range(n):
-                if tttboard[i][j] == " ":
-                    return (i,j)
+        posx, posy = normal_move(tttboard)
+        return posx, posy
     
-'''
-def neighbors(tttboard):
-    return
 
-def check_winning_move(tttboard, tar): #Telling CPU where it can make a play to win. returns postion and bool
-    for i in range(tar - 1):
-        return
-
-def is_gonna_win(tttboard, tar):
-    return
-'''
-
-def attack(tttboard):
-    for i in range(len(tttboard)):
-        for j in range(len(tttboard)):
-            if tttboard[i][j] == CPU:
-                print(f"{i}, {j} is X")
-
-                # checks row
-                if j<6:
-                    templist1 = {}
-
-                    for y in range(j,j+4):
-                        templist1[tttboard[i][y]] = templist1.get(tttboard[i][y], 0) + 1
-
-                    if templist1.get(CPU, 0) == 3 and  templist1.get(" ", 0) == 2:
-                        for y in range(j,j+4):
-                            if tttboard[i][y] == " ":
-                                return True , (i,y)
-
-                # checks column
-                if i<6:
-                    templist2 = {}
-                    
-                    for x in range(i,i+4):
-                        templist2[tttboard[x][j]] = templist2.get(tttboard[x][j], 0) + 1
-
-                    if templist2.get(CPU, 0) == 3 and  templist2.get(" ", 0) == 2:
-                        for x in range(i,i+4):
-                            if tttboard[x][j] == " ":
-                                return True, (x, j)
-
-                # checks right diagonals
-                if i<6 and j<6:
-                    templist3 = {}
-                    
-                    for e in range(5):
-                        templist3[tttboard[i+e][j+e]] = templist3.get(tttboard[i+e][j+e], 0) + 1
-                    
-                    if templist3.get(CPU, 0) == 3 and  templist3.get(" ", 0) == 2:
-                        for e in range(5):
-                            if tttboard[i+e][j+e] == " ":
-                                return True, (i+e, j+e)
-
-                # checks left diagonals    
-                if i>3 and j<6:
-                    templist4 = {}
-                    
-                    for e in range(5):
-                        templist4[tttboard[i+e][j-e]] = templist4.get(tttboard[i+e][j-e], 0) + 1
-                    
-                    if templist4.get(CPU, 0) == 3 and  templist4.get(" ", 0) == 2:
-                        for e in range(5):
-                            if tttboard[i+e][j-e] == " ":
-                                return True, (i+e, j-e)
-                
-    print("attack skipped")
-    return False, (i, j)
 
 def normal_move(tttboard):
     n = len(tttboard)
@@ -341,7 +278,80 @@ def normal_move(tttboard):
             if tttboard[i][j] == " ":
                 return (i,j) #Fills up an empty cell,  Location for CPU isn't used
 
+def test(extracted):
 
+    condi1 = [" ", CPU, CPU, CPU, " "]
+    condi2 = [" ", CPU, " ", CPU, CPU]
+    condi3 = [CPU, " ", CPU, CPU, " "]
+
+    if extracted == condi1:
+        return [True, 0]
+    elif extracted == condi2:
+        return [True, 2]
+    elif extracted == condi3:
+        return [True,1]
+
+def check_attack(tttboard,x,y,tar): # each function returns bool, x, y
+      if attack_check_rows(tttboard,x,y,tar):
+        return True
+      elif attack_check_columns(tttboard,x,y,tar):
+        return True
+      elif attack_check_right_diag(tttboard,x,y,tar):
+        return True
+      elif attack_check_left_diag(tttboard,x,y,tar):
+        return True
+      else: 
+        return False
+
+def attack_check_rows(tttboard,x,y,tar):
+    global curr_player
+    for i in range(y-tar+1,y+1):
+        if i < 0 or i > 5:
+            continue
+        extracted = []
+        for j in range(i,i+tar): 
+            extracted.append(tttboard[x][j])
+        if test(extracted)[0]:
+            away = test(extracted)[1]
+            return True, x, i+away            
+
+def attack_check_columns(tttboard,x,y,tar):
+    global curr_player
+    for i in range(x-tar+1,x+1):
+        if i < 0:
+            continue
+        extracted = []
+        for j in range(i,i+tar):
+            extracted.append(tttboard[j][y])
+        if test(extracted)[0]:
+            away = test(extracted)[1]
+            return True, i+away, y            
+
+def attack_check_right_diag(tttboard,x,y,tar):
+    global curr_player
+    n = len(tttboard)
+    for i in range(0,tar):
+        if x-i < 0 or y-i < 0:
+            continue
+        extracted = []
+        for j in range(0,tar):
+            extracted.append(tttboard[j+x-i][j+y-i])
+        if test(extracted)[0]:
+            away = test(extracted)[1]
+            return True, x-i+away, y-i+away 
+
+def attack_check_left_diag(tttboard,x,y,tar):
+    global curr_player
+    n = len(tttboard)
+    for i in range(0,tar):
+        if x+i >= n or y-i < 0:
+            continue
+        extracted = []
+        for j in range(0,tar):
+            extracted.append(tttboard[j+x-i][j+y-i])
+        if test(extracted)[0]:
+            away = test(extracted)[1]
+            return True, x+i+away, y-i+away
 
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
