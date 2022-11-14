@@ -1,5 +1,3 @@
-
-
 def draw_board(arr):
     """
     arr is the array of X, O, or " " as it is in the board
@@ -14,10 +12,10 @@ def draw_board(arr):
     print(top) # print the top which contains the numbers across
     for i in range(0,n):
         rowLine = str(i) + " " # current row of X, O, and " ". Starts with row number
-        print(demLine, end = "+\n") # print the demarcation ending w/ an | and newline 
+        print(demLine, end = "+\n") # print the demarcation ending w/ an * and newline 
         for j in range(0,n):
-            rowLine += "| " + arr[i][j] + " " # add X, O, or " " to current row  * X * O
-        print(rowLine + "|") # show the current row ending with an |
+            rowLine += "| " + arr[i][j] + " " # add X, O, or " " to current row    * X * O
+        print(rowLine + "|") # show the current row ending with an *
     print(demLine, end = "+\n") # print the last demarcation line at the end
 
 def check_coord(x,n):
@@ -42,100 +40,82 @@ def check_coord(x,n):
         # if there is no error
         return True
 
-def play_game(n,thresh): # n is the length of the dimensions of the game and thresh is the number in a row needed to win
-    global p1, CPU, prevx, prevy
+def play_game(n,thresh):
+    global prevx,prevy
     prevy = 0
     prevx = 0
-    p1 = [0]*n
-    p1 = "O"
-    CPU = "X"
-    tttboard = [] # this keeps record of the board, either "X" or "O" or " "
+
+    tttboard = [] # this keeps record of the board, either X or O or " "
     plays = 0 # number of time both players have played in total
 
     # generate a double array of spaces as an initial board
     inner = []
-    for _ in range(0,n):
+    for i in range(0,n):
         inner.append(" ")
-    for _ in range(0,n):
+    for i in range(0,n):
         tttboard.append(inner[:])
       
     # To check if someone has won. If anyone wins, won is going to be
     # a  string: X wins, O wins, or DRAW
     won = None
 
-    curr_player = True # boolean to check player 1 or CPU. player 1 == True, CPU == False
+    curr_player = True # boolean to check player 1 or 2
     draw_board(tttboard) # displays inital empty board
 
     while (won == None): # if won is None, no player has won
-        
-        if curr_player: # if curr_player is True player 1 is to play
-            
-            print("Player 1 (O)")
-            x, y = p1_input(tttboard, n)
-
-            tttboard[x][y] = p1
-        
-            if check_win(tttboard, x, y, thresh, p1): # check if X has won
-                draw_board(tttboard)
-                won = "O wins" # won is no longer None. While loop breaks
-        
-                continue
-        
+        if curr_player:
+            print("Player 1") # if curr_player is true player 1 is to play
+            valid_p1_location = False  # valid_p1_location tracks whether the player has chosen a valid location
+            while not valid_p1_location:  # while a valid location (x,y) has not been chosen
+                valid_no = False
+                while not valid_no:  # while a valid x value has not been chosen
+                    x = input("Input the x location: ")  # x is a string
+                    valid_no = check_coord(x, n)  # check if x is an integer between 0 and n CPU NEEDED
+                x = int(x)
+                valid_no = False
+                while not valid_no:  # while a valid y value has not been chosen
+                    y = input("Input the y location: ")
+                    valid_no = check_coord(y, n)  # check if y is an integer between 0 and n CPU NEEDED
+                y = int(y)
+                if tttboard[x][y] != " ":
+                    print("Space used. Select another.")
+                else:
+                    valid_p1_location = not valid_p1_location  # correct location chosen... continue game
         else:
-        
-            print("CPU (X)") # if curr_player is false player 2 is to play 
-            x, y = CPU_next_move(tttboard) 
-
-            tttboard[x][y] = CPU
-
-            
+            print("CPU") # if curr_player is false player 2 is to play 
+            x,y = CPU_next_move(tttboard)  #ava_location = avaiableLocation for CPU moves
             prevx = x
             prevy = y
-        
-            if check_win(tttboard, x, y, thresh, CPU): # check if Y has won
+
+        # the current player has to choose a location to play to
+
+        if curr_player:
+            tttboard[x][y] = "X"
+            if check_win(tttboard, x, y, thresh, "X"): # check if X has won
                 draw_board(tttboard)
                 won = "X wins" # won is no longer None. While loop breaks
-        
+                continue
+        else:
+            tttboard[x][y] = "O"
+            if check_win(tttboard, x, y, thresh, "O"): # check if Y has won
+                draw_board(tttboard)
+                won = "O wins" # won is no longer None. While loop breaks
                 continue
         
         # if nobody has won
-
-        draw_board(tttboard) # updates board
+        draw_board(tttboard) # show the updated board
         plays += 1 # increase the number of those who have played
-        curr_player = not curr_player  #rotates between player and CPU
-        
-        if plays == n**2: # if people have played n^2 times, the whole board is filled.
-            won = "DRAW"  # it's a draw, and won is no longer "None", so while loop breaks 
+        curr_player = not curr_player  #change the player to the CPU
+
+        # if people have played n^2 times, the whole board is filled.
+        # it's a draw
+        if plays == n**2:
+            won = "DRAW"
         
     # this runs after won has changed to either "X wins", "O wins", or "DRAW"    
     print(won)
              
-def p1_input(tttboard, n):
-    valid_p1_location = False  # valid_p1_location tracks whether the player has chosen a valid location
-    while not valid_p1_location:  # while a valid location (x,y) has not been chosen
-    
-        valid_no = False
-    
-        while not valid_no:  # while a valid x value has not been chosen
-            x = input("Input the x location: ")  # x is a string
-            valid_no = check_coord(x, n)  # check if x is an integer between 0 and n CPU NEEDED
-    
-        x = int(x)
-        valid_no = False
-    
-        while not valid_no:  # while a valid y value has not been chosen
-            y = input("Input the y location: ")
-            valid_no = check_coord(y, n)  # check if y is an integer between 0 and n CPU NEEDED
-    
-        y = int(y)
-    
-        if tttboard[x][y] != " ":
-            print("Space used. Select another.")
-    
-        else:
-                    valid_p1_location = not valid_p1_location  # correct location chosen... continue game
-    
-    return (x,y)
+
 
 def check_win(tttboard,x,y,tar,ch):
       if check_rows(tttboard,x,y,tar,ch):
@@ -165,6 +145,8 @@ def check_rows(tttboard,x,y,tar,ch): #ch = X
         if every_x:
             return True
   
+
+
 def check_columns(tttboard,x,y,tar,ch):
     global curr_player
     for i in range(x-tar+1,x+1):
@@ -215,20 +197,13 @@ def check_left_diag(tttboard,x,y,tar,ch):
         if every_xy:
             return True
 
-
-'''
-def CPU_next_move(tttboard): #Telling CPU where it can make a move/play
-        n = len(tttboard)
-        for i in range(n):
-            for j in range(n):
-                if tttboard[i][j] == " ":
-                    return (i,j) #Fills up an empty cell,  Location for CPU isn't used
-'''
-
-
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 def CPU_next_move(tttboard): #Telling CPU where it can make a move/play. returns the coords of the next move
+    global CPU, p1
+    CPU = 'O'
+    p1 = 'X'
+
     n = len(tttboard)
     is_attack, posx, posy = check_attack(tttboard, prevx, prevy, 5)
     if is_attack == True:
@@ -236,45 +211,36 @@ def CPU_next_move(tttboard): #Telling CPU where it can make a move/play. returns
     else:
         posx, posy = normal_move(tttboard)
         return posx, posy
-    
 
 
-def normal_move(tttboard):
-    n = len(tttboard)
-    optimum = [4,5]
-    isoptimum = True
-    isnear = True
+def winning_move(tttboard):
+    win_move,posx,posy = check_win_rows(tttboard,prevx,prevy,4,CPU)
+    if win_move:
+        return True,posx,posy
+    win_move,posx,posy = check_win_columns(tttboard,prevx,prevy,4,CPU)
+    if win_move:
+        return True,posx,posy
+    win_move,posx,posy = check_win_right_diag(tttboard,prevx,prevy,4,CPU)
+    if win_move:
+        return True,posx,posy
+    win_move,posx,posy = check_win_left_diag(tttboard,prevx,prevy,4,CPU)
+    if win_move:
+        return True,posx,posy
+     
+    return False
 
-    while isoptimum == True:
-        for i in range(len(optimum)):
-            for j in range(len(optimum)):
-                if tttboard[optimum[i]][optimum[j]] == " ":
-                    return(optimum[i],optimum[j])
-                isoptimum = False
+def check_win_rows(tttboard,prevx,prevy,tar,CPU):
+    return True,posx,posy
 
+def check_win_columns(tttboard,prevx,prevy,tar,CPU):
+    return True,posx,posy
 
-    while isnear == True:
-        for i in range(n):
-            for j in range(n):
-                if tttboard[i][j] == CPU:
-                    if tttboard[i+1][j] == " " :
-                        return(i+1,j)
-                    elif tttboard[i-1][j] == " ":
-                        return(i-1,j)
-                    elif tttboard[i][j+1] == " ":
-                        return(i,j+1)
-                    elif tttboard[i][j-1] == " ":
-                        return(i,j-1)
-                    elif tttboard[i+1][j+1] == " ":
-                        return(i+1,j)
-                    elif tttboard[i-1][j-1] == " ":
-                        return(i-1,j-1)
-                    isnear = False
+def check_win_right_diag(tttboard,prevx,prevy,tar,CPU):
+    return True,posx,posy
 
-    for i in range(n):
-        for j in range(n):
-            if tttboard[i][j] == " ":
-                return (i,j) #Fills up an empty cell,  Location for CPU isn't used
+def check_win_left_diag(tttboard,prevx,prevy,tar,CPU):
+    return True,posx,posy
+
 
 def test(extracted):
 
@@ -310,7 +276,6 @@ def check_attack(tttboard,x,y,tar): # each function returns bool, x, y
     
     return False, -1, -1
 
-
 def attack_check_rows(tttboard,x,y,tar):
     global curr_player
     for i in range(y-tar+1,y+1):
@@ -321,7 +286,7 @@ def attack_check_rows(tttboard,x,y,tar):
             extracted.append(tttboard[x][j])
         lst, away = test(extracted)
         if lst == True:
-            return x, i+away
+            return True, x, i+away
         return False, -1, -1
 
 def attack_check_columns(tttboard,x,y,tar):
@@ -366,8 +331,51 @@ def attack_check_left_diag(tttboard,x,y,tar):
         return False, -1, -1
 
 
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Insert Defense Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+def cpu_defence(tttboard):
+    for i in range(len(tttboard)):
+        for j in range(len(tttboard[i])):
+            if tttboard[i][j] == p1:
+    return i,j, False
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Defence Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
+
+def normal_move(tttboard):
+    n = len(tttboard)
+    optimum = [4,5]
+    isoptimum = True
+    isnear = True
+
+    while isoptimum == True:
+        for i in range(len(optimum)):
+            for j in range(len(optimum)):
+                if tttboard[optimum[i]][optimum[j]] == " ":
+                    return(optimum[i],optimum[j])
+                isoptimum = False
+                    
+                    
+    while isnear == True:
+        for i in range(n):
+            for j in range(n):
+                if tttboard[i][j] == "O":
+                    if tttboard[i+1][j] == " " :
+                        return(i+1,j)
+                    elif tttboard[i-1][j] == " ":
+                        return(i-1,j)
+                    elif tttboard[i][j+1] == " ":
+                        return(i,j+1)
+                    elif tttboard[i][j-1] == " ":
+                        return(i,j-1)
+                    elif tttboard[i+1][j+1] == " ":
+                        return(i+1,j)  
+                    elif tttboard[i-1][j-1] == " ":
+                        return(i-1,j-1)
+                    isnear = False  
+
+    for i in range(n):
+        for j in range(n):
+            if tttboard[i][j] == " ":
+                return (i,j) #Fills up an empty cell,  Location for CPU isn't used            
 
 # track each player's data
 # keep track of both player and CPU information
