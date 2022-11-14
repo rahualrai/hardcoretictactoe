@@ -114,8 +114,23 @@ def play_game(n,thresh):
         
     # this runs after won has changed to either "X wins", "O wins", or "DRAW"    
     print(won)
-             
 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+
+def CPU_next_move(tttboard): #Telling CPU where it can make a move/play. returns the coords of the next move
+    global CPU, p1
+    CPU = 'O'
+    p1 = 'X'
+
+    n = len(tttboard)
+    is_attack, posx, posy = check_attack(tttboard, prevx, prevy, 5)
+    if is_attack == True:
+        return posx, posy # pos ---> x, y
+    else:
+        posx, posy = normal_move(tttboard)
+        return posx, posy
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Check Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 def check_win(tttboard,x,y,tar,ch):
       if check_rows(tttboard,x,y,tar,ch):
@@ -145,8 +160,6 @@ def check_rows(tttboard,x,y,tar,ch): #ch = X
         if every_x:
             return True
   
-
-
 def check_columns(tttboard,x,y,tar,ch):
     global curr_player
     for i in range(x-tar+1,x+1):
@@ -197,51 +210,97 @@ def check_left_diag(tttboard,x,y,tar,ch):
         if every_xy:
             return True
 
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Check Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-def CPU_next_move(tttboard): #Telling CPU where it can make a move/play. returns the coords of the next move
-    global CPU, p1
-    CPU = 'O'
-    p1 = 'X'
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Attack Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+def test_wins(extracted):
 
-    n = len(tttboard)
-    is_attack, posx, posy = check_attack(tttboard, prevx, prevy, 5)
-    if is_attack == True:
-        return posx, posy # pos ---> x, y
+    condi1 = [" ", CPU, CPU, CPU, CPU]
+    condi2 = [CPU, " ", CPU, CPU, CPU]
+    condi3 = [CPU, CPU, " ", CPU, CPU]
+    condi4 = [CPU, CPU, CPU, " ", CPU]
+    condi5 = [CPU, CPU, CPU, CPU, " "]
+
+    if extracted == condi1:
+        return True, 0
+    elif extracted == condi2:
+        return True, 1
+    elif extracted == condi3:
+        return True, 2
+    elif extracted == condi4:
+        return True, 3
+    elif extracted == condi5:
+        return True, 4
     else:
-        posx, posy = normal_move(tttboard)
-        return posx, posy
-
+        return False, -1
 
 def winning_move(tttboard):
-    win_move,posx,posy = check_win_rows(tttboard,prevx,prevy,4,CPU)
+    win_move,posx,posy = check_win_rows(tttboard,prevx,prevy,5)
     if win_move:
         return True,posx,posy
-    win_move,posx,posy = check_win_columns(tttboard,prevx,prevy,4,CPU)
+    win_move,posx,posy = check_win_columns(tttboard,prevx,prevy,5)
     if win_move:
         return True,posx,posy
-    win_move,posx,posy = check_win_right_diag(tttboard,prevx,prevy,4,CPU)
+    win_move,posx,posy = check_win_right_diag(tttboard,prevx,prevy,5)
     if win_move:
         return True,posx,posy
-    win_move,posx,posy = check_win_left_diag(tttboard,prevx,prevy,4,CPU)
+    win_move,posx,posy = check_win_left_diag(tttboard,prevx,prevy,5)
     if win_move:
         return True,posx,posy
-     
-    return False
+    return False, -1, -1
 
-def check_win_rows(tttboard,prevx,prevy,tar,CPU):
-    return True,posx,posy
+def check_win_rows(tttboard,x,y,tar):
+    for i in range(y-tar+1,y+1):
+        if i < 0 or i > 5:
+            continue
+        extracted = []
+        for j in range(i,i+tar): 
+            extracted.append(tttboard[x][j])
+        lst, away = test_wins(extracted)
+        if lst == True:
+            return True, x, i+away
+    return False, -1, -1
 
-def check_win_columns(tttboard,prevx,prevy,tar,CPU):
-    return True,posx,posy
+def check_win_columns(tttboard,x,y,tar):
+    for i in range(x-tar+1,x+1):
+        if i < 0:
+            continue
+        extracted = []
+        for j in range(i,i+tar):
+            extracted.append(tttboard[j][y])
+        lst, away = test_wins(extracted)
+        if lst == True:
+            return True, i+away, y    
+    return False, -1, -1
 
-def check_win_right_diag(tttboard,prevx,prevy,tar,CPU):
-    return True,posx,posy
+def check_win_right_diag(tttboard,x,y,tar):
+    for i in range(0,tar):
+        if x-i < 0 or y-i < 0:
+            continue
+        extracted = []
+        for j in range(0,tar):
+            extracted.append(tttboard[j+x-i][j+y-i])
+        lst, away = test_wins(extracted)
+        if lst == True:
+            return True, x-i+away, y-i+away 
+    return False, -1, -1
 
-def check_win_left_diag(tttboard,prevx,prevy,tar,CPU):
-    return True,posx,posy
+def check_win_left_diag(tttboard,x,y,tar):
+    n = len(tttboard)
+    for i in range(0,tar):
+        if x+i >= n or y-i < 0:
+            continue
+        extracted = []
+        for j in range(0,tar):
+            extracted.append(tttboard[j+x-i][j+y-i])
+        lst, away = test_wins(extracted)
+        if lst == True:
+            return True, x+i+away, y-i+away
+    return False, -1, -1
 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Winning Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Attack Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 def test(extracted):
 
     condi1 = [" ", CPU, CPU, CPU, " "]
@@ -287,7 +346,7 @@ def attack_check_rows(tttboard,x,y,tar):
         lst, away = test(extracted)
         if lst == True:
             return True, x, i+away
-        return False, -1, -1
+    return False, -1, -1
 
 def attack_check_columns(tttboard,x,y,tar):
     global curr_player
@@ -300,7 +359,7 @@ def attack_check_columns(tttboard,x,y,tar):
         lst, away = test(extracted)
         if lst == True:
             return True, i+away, y    
-        return False, -1, -1
+    return False, -1, -1
 
 def attack_check_right_diag(tttboard,x,y,tar):
     global curr_player
@@ -314,7 +373,7 @@ def attack_check_right_diag(tttboard,x,y,tar):
         lst, away = test(extracted)
         if lst == True:
             return True, x-i+away, y-i+away 
-        return False, -1, -1
+    return False, -1, -1
 
 def attack_check_left_diag(tttboard,x,y,tar):
     global curr_player
@@ -328,10 +387,10 @@ def attack_check_left_diag(tttboard,x,y,tar):
         lst, away = test(extracted)
         if lst == True:
             return True, x+i+away, y-i+away
-        return False, -1, -1
+    return False, -1, -1
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Attack Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Insert Defense Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Defense Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 def cpu_defence(tttboard):
     for i in range(len(tttboard)):
         for j in range(len(tttboard[i])):
@@ -339,7 +398,7 @@ def cpu_defence(tttboard):
     return i,j, False
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Defence Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Normal Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 def normal_move(tttboard):
     n = len(tttboard)
     optimum = [4,5]
@@ -375,7 +434,8 @@ def normal_move(tttboard):
     for i in range(n):
         for j in range(n):
             if tttboard[i][j] == " ":
-                return (i,j) #Fills up an empty cell,  Location for CPU isn't used            
+                return (i,j) #Fills up an empty cell,  Location for CPU isn't used    
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Normal Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 # track each player's data
 # keep track of both player and CPU information
