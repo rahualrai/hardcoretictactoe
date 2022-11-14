@@ -126,13 +126,16 @@ def CPU_next_move(tttboard): #Telling CPU where it can make a move/play. returns
 
     is_winning, posx, posy = winning_move(tttboard)
     if is_winning:
+        print(f"CPU plays winning move at {posx}, {posy}")
         return posx, posy
 
     is_attack, posx, posy = check_attack(tttboard, prevx, prevy, 5)
     if is_attack:
+        print(f"CPU plays attacking move at {posx}, {posy}")
         return posx, posy # pos ---> x, y
     
     posx, posy = normal_move(tttboard)
+    print(f"CPU plays normal move at {posx}, {posy}")
     return posx, posy
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Check Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
