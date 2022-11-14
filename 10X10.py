@@ -93,13 +93,13 @@ def play_game(n,thresh):
             tttboard[x][y] = "X"
             if check_win(tttboard, x, y, thresh, "X"): # check if X has won
                 draw_board(tttboard)
-                won = "X wins" # won is no longer None. While loop breaks
+                won = "P1 wins" # won is no longer None. While loop breaks
                 continue
         else:
             tttboard[x][y] = "O"
             if check_win(tttboard, x, y, thresh, "O"): # check if Y has won
                 draw_board(tttboard)
-                won = "O wins" # won is no longer None. While loop breaks
+                won = "CPU wins" # won is no longer None. While loop breaks
                 continue
         
         # if nobody has won
@@ -123,12 +123,17 @@ def CPU_next_move(tttboard): #Telling CPU where it can make a move/play. returns
     p1 = 'X'
 
     n = len(tttboard)
-    is_attack, posx, posy = check_attack(tttboard, prevx, prevy, 5)
-    if is_attack == True:
-        return posx, posy # pos ---> x, y
-    else:
-        posx, posy = normal_move(tttboard)
+
+    is_winning, posx, posy = winning_move(tttboard)
+    if is_winning:
         return posx, posy
+
+    is_attack, posx, posy = check_attack(tttboard, prevx, prevy, 5)
+    if is_attack:
+        return posx, posy # pos ---> x, y
+    
+    posx, posy = normal_move(tttboard)
+    return posx, posy
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Check Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
@@ -213,6 +218,28 @@ def check_left_diag(tttboard,x,y,tar,ch):
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Check Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Attack Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+
+def winning_move(tttboard):
+
+    # rows 
+    win_move,posx,posy = check_win_rows(tttboard,prevx,prevy,5)
+    if win_move:
+        return True,posx,posy
+    # columns |
+    win_move,posx,posy = check_win_columns(tttboard,prevx,prevy,5)
+    if win_move:
+        return True,posx,posy
+    # right diagonals /
+    win_move,posx,posy = check_win_right_diag(tttboard,prevx,prevy,5)
+    if win_move:
+        return True,posx,posy
+    # left diagonals \
+    win_move,posx,posy = check_win_left_diag(tttboard,prevx,prevy,5)
+    if win_move:
+        return True,posx,posy
+    
+    return False, -1, -1
+
 def test_wins(extracted):
 
     condi1 = [" ", CPU, CPU, CPU, CPU]
@@ -233,21 +260,6 @@ def test_wins(extracted):
         return True, 4
     else:
         return False, -1
-
-def winning_move(tttboard):
-    win_move,posx,posy = check_win_rows(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
-    win_move,posx,posy = check_win_columns(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
-    win_move,posx,posy = check_win_right_diag(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
-    win_move,posx,posy = check_win_left_diag(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
-    return False, -1, -1
 
 def check_win_rows(tttboard,x,y,tar):
     for i in range(y-tar+1,y+1):
@@ -391,11 +403,11 @@ def attack_check_left_diag(tttboard,x,y,tar):
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Attack Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Defense Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-def cpu_defence(tttboard):
+'''def cpu_defence(tttboard):
     for i in range(len(tttboard)):
         for j in range(len(tttboard[i])):
             if tttboard[i][j] == p1:
-    return i,j, False
+    return i,j, False'''
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Defence Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Normal Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
