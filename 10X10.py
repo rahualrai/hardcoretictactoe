@@ -271,44 +271,43 @@ def check_win_rows(tttboard,x,y,tar):
         for j in range(i,i+tar): 
             extracted.append(tttboard[x][j])
         lst, away = test_wins(extracted)
-        if lst == True:
+        if lst:
             return True, x, i+away
     return False, -1, -1
 
 def check_win_columns(tttboard,x,y,tar):
     for i in range(x-tar+1,x+1):
-        if i < 0:
+        if i < 0 or i > 5:
             continue
         extracted = []
         for j in range(i,i+tar):
             extracted.append(tttboard[j][y])
         lst, away = test_wins(extracted)
-        if lst == True:
+        if lst:
             return True, i+away, y    
     return False, -1, -1
 
-def check_win_right_diag(tttboard,x,y,tar):
+def check_win_right_diag(tttboard,x,y,tar=5):
     for i in range(0,tar):
-        if x-i < 0 or y-i < 0:
+        if x-i < 0 or y-i < 0 or x-i > 5 or y-i > 5:
             continue
         extracted = []
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test_wins(extracted)
-        if lst == True:
+        if lst:
             return True, x-i+away, y-i+away 
     return False, -1, -1
 
 def check_win_left_diag(tttboard,x,y,tar):
-    n = len(tttboard)
     for i in range(0,tar):
-        if x+i >= n or y-i < 0:
+        if x+i > 9 or y-i < 0 or y-i > 5 or x+i < 5:
             continue
         extracted = []
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test_wins(extracted)
-        if lst == True:
+        if lst:
             return True, x+i+away, y-i+away
     return False, -1, -1
 
@@ -357,7 +356,7 @@ def attack_check_rows(tttboard,x,y,tar):
         for j in range(i,i+tar): 
             extracted.append(tttboard[x][j])
         lst, away = test(extracted)
-        if lst == True:
+        if lst:
             return True, x, i+away
     return False, -1, -1
 
@@ -369,7 +368,7 @@ def attack_check_columns(tttboard,x,y,tar):
         for j in range(i,i+tar):
             extracted.append(tttboard[j][y])
         lst, away = test(extracted)
-        if lst == True:
+        if lst:
             return True, i+away, y    
     return False, -1, -1
 
@@ -381,7 +380,7 @@ def attack_check_right_diag(tttboard,x,y,tar):
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test(extracted)
-        if lst == True:
+        if lst:
             return True, x-i+away, y-i+away 
     return False, -1, -1
 
@@ -394,7 +393,7 @@ def attack_check_left_diag(tttboard,x,y,tar):
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test(extracted)
-        if lst == True:
+        if lst:
             return True, x+i+away, y-i+away
     return False, -1, -1
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Attack Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
@@ -403,18 +402,31 @@ def attack_check_left_diag(tttboard,x,y,tar):
 
 def test_def(extracted):
 
-    condi1 = [" ", p1, p1, p1, " "]
-    condi2 = [p1, " ", p1, p1, " "]
-    condi3 = [" ", p1, " ", p1, p1]
+    condi1 = [" ", p1, p1, p1, " "] #4
+    condi2 = [" ", p1, p1, " ", p1] #3
+    condi3 = [" ", p1, " ", p1, p1] #2
+
+    condi4 = [p1, " ", p1, p1, " "] #2
+    condi5 = [p1, " ", p1, " ", p1] #3
+    condi6 = [p1, p1, " ", p1, " "] #2
+
+    condi7 = [p1, p1, p1, p1, " "]  #4
+    condi8 = [" ", p1, p1, p1, p1]  #0
+
+
 
     if extracted == condi1:
-        return True, 0
-    elif extracted == condi2:
-        return True, 1
-    elif extracted == condi3:
+        return True, 4
+    elif extracted == condi2 or extracted == condi5:
+        return True, 3
+    elif extracted == condi3 or extracted == condi4 or extracted == condi6:
         return True, 2
+    elif extracted == condi7:
+        return True, 4
+    elif extracted == condi8:
+        return True, 0
     else:
-        return False, -1
+        return False, None
 
 def cpu_defence(tttboard):
     for i in range(len(tttboard)):
@@ -447,7 +459,7 @@ def check_def_row(tttboard, x, y, tar):
         for j in range(i,i+tar): 
             extracted.append(tttboard[x][j])
         lst, away = test_def(extracted)
-        if lst == True:
+        if lst:
             return True, x, i+away
     return False, -1, -1
 
@@ -459,7 +471,7 @@ def check_def_column(tttboard, x, y, tar):
         for j in range(i,i+tar):
             extracted.append(tttboard[j][y])
         lst, away = test_def(extracted)
-        if lst == True:
+        if lst:
             return True, i+away, y    
     return False, -1, -1
 
@@ -471,7 +483,7 @@ def check_def_right_diag(tttboard,x,y,tar):
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test_def(extracted)
-        if lst == True:
+        if lst:
             return True, x-i+away, y-i+away 
     return False, -1, -1
 
@@ -484,7 +496,7 @@ def check_def_left_diag(tttboard, x, y, tar):
         for j in range(0,tar):
             extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test_def(extracted)
-        if lst == True:
+        if lst:
             return True, x+i+away, y-i+away
     return False, -1, -1
 
