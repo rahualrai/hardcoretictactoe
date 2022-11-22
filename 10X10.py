@@ -50,9 +50,9 @@ def play_game(n,thresh):
 
     # generate a double array of spaces as an initial board
     inner = []
-    for i in range(0,n):
+    for _ in range(0,n):
         inner.append(" ")
-    for i in range(0,n):
+    for _ in range(0,n):
         tttboard.append(inner[:])
       
     # To check if someone has won. If anyone wins, won is going to be
@@ -223,22 +223,26 @@ def check_left_diag(tttboard,x,y,tar,ch):
 
 def winning_move(tttboard):
 
-    # rows 
-    win_move,posx,posy = check_win_rows(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
-    # columns |
-    win_move,posx,posy = check_win_columns(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
-    # right diagonals /
-    win_move,posx,posy = check_win_right_diag(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
-    # left diagonals \
-    win_move,posx,posy = check_win_left_diag(tttboard,prevx,prevy,5)
-    if win_move:
-        return True,posx,posy
+    for cpux in range(len(tttboard)):
+        for cpuy in range(0,len(tttboard)):
+            if tttboard[cpux][cpuy] == CPU:
+                
+                # rows 
+                win_move,posx,posy = check_win_rows(tttboard,cpux,cpuy,5)
+                if win_move:
+                    return True,posx,posy
+                # columns |
+                win_move,posx,posy = check_win_columns(tttboard,cpux,cpuy,5)
+                if win_move:
+                    return True,posx,posy
+                # right diagonals /
+                win_move,posx,posy = check_win_right_diag(tttboard,cpux,cpuy,5)
+                if win_move:
+                    return True,posx,posy
+                # left diagonals \
+                win_move,posx,posy = check_win_left_diag(tttboard,cpux,cpuy,5)
+                if win_move:
+                    return True,posx,posy
     
     return False, -1, -1
 
@@ -272,7 +276,8 @@ def check_win_rows(tttboard,x,y,tar):
             extracted.append(tttboard[x][j])
         lst, away = test_wins(extracted)
         if lst:
-            return True, x, i+away
+            if tttboard[x][i+away] == " ":
+                return True, x, i+away
     return False, -1, -1
 
 def check_win_columns(tttboard,x,y,tar):
@@ -284,7 +289,8 @@ def check_win_columns(tttboard,x,y,tar):
             extracted.append(tttboard[j][y])
         lst, away = test_wins(extracted)
         if lst:
-            return True, i+away, y    
+            if tttboard[i+away][y] == " ":
+                return True, i+away, y    
     return False, -1, -1
 
 def check_win_right_diag(tttboard,x,y,tar=5):
