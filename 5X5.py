@@ -1,197 +1,122 @@
-def drawBoard(arr):
-    """
-    arr is the array of X, O, or " " as it is in the board
-    """
-    n = len(arr)  # the length of the array - the board is an nxn board
-    top = "  "  # the board has a top which has all the numbers across
-    demLine = "  "
-    rowLine = ""
-    for i in range(0, n):
-        top += "  " + str(i) + " "  # add the number markers to the top string
-        demLine += "* * "  # this is the demarcation between each row
-    print(top)  # print the top which contains the numbers across
-    for i in range(0, n):
-        rowLine = str(i) + " "  # current row of X, O, and " ". Starts with row number
-        print(demLine, end="*\n")  # print the demarcation ending w/ an * and newline
-        for j in range(0, n):
-            rowLine += "* " + arr[i][j] + " "  # add X, O, or " " to current row    * X * O
-        print(rowLine + "*")  # show the current row ending with an *
-    print(demLine, end="*\n")  # print the last demarcation line at the end
+import numpy as np
 
+board = np.zeros((5,5), dtype=int)
 
-def checkCood(x, n):
-    """
-    This function checks if a value of x or y inputted by the user to place X or
-    O in a certain location (x,y) is correct.
-    Returns True if x is a valid input.
-    Returns False otherwise.
-    """
-    # EXCEPTION HANDLING
-    try:
-        int(x)  # converts to integer. No error if x is an integer
-    except ValueError:
-        # if x is not an integer:
-        print("Input an integer between 0 and " + str(n) + " inclusive")
-        return False
-    # if x is an integer:
-    if not (0 <= int(x) < n):
-        # if x is an integer but is not a valid index i.e not in 0 <= x < n
-        print("Wrong coordinate input")
-        return False
+def print_board(board):
+    for row in board:
+        print(row)
+
+def is_game_over(board):
+    # Check for a winner
+    for row in range(5):
+        for col in range(5):
+            # Check for horizontal win
+            if (row+4) <= 4 and board[row][col] == board[row+1][col] == board[row+2][col] == board[row+3][col] == board[row+4][col] and board[row][col] != 0:
+                return board[row][col]
+            # Check for vertical win
+            if (col+4) <= 4 and board[row][col] == board[row][col+1] == board[row][col+2] == board[row][col+3] == board[row][col+4] and board[row][col] != 0:
+                return board[row][col]
+            # Check for diagonal win
+            if (row+4) <= 4 and (col+4) <= 4 and board[row][col] == board[row+1][col+1] == board[row+2][col+2] == board[row+3][col+3] == board[row+4][col+4] and board[row][col] != 0:
+                return board[row][col]
+            if (row-4) >= 0 and (col+4) <= 4 and board[row][col] == board[row-1][col+1] == board[row-2][col+2] == board[row-3][col+3] == board[row-4][col+4] and board[row][col] != 0:
+                return board[row][col]
+    # Check for a draw
+    if np.all(board != 0):
+        return 0
     else:
-        # if there is no error
-        return True
+        return None
 
+def minimax(board, depth, player):
+    # Get the game status
+    status = is_game_over(board)
+    # If game is over, return the score
+    if status is not None:
+        if status == 1:
+            return 1
+        elif status == 2:
+            return -1
+        elif status == 0:
+            return 0
+    # Check if the board is full
+    if np.all(board != 0):
+        return 0
+    # Check if it's player 1's turn
+    if player == 1:
+        best_score = -float('inf')
+        for row in range(5):
+            for col in range(5):
+                # Check if the slot is empty
+                if board[row][col] == 0:
+                    # Make the move
+                    board[row][col] = 1
+                    # Recursively call the minimax function
+                    score = minimax(board, depth+1, 2)
+                    # Reset the board
+                    board[row][col] = 0
+                    # Check if it's the best score
+                    best_score = max(score, best_score)
+        return best_score
+    # Check if it's player 2's turn
+    elif player == 2:
+        best_score = float('inf')
+        for row in range(5):
+            for col in range(5):
+                # Check if the slot is empty
+                if board[row][col] == 0:
+                    # Make the move
+                    board[row][col] = 2
+                    # Recursively call the minimax function
+                    score = minimax(board, depth+1, 1)
+                    # Reset the board
+                    board[row][col] = 0
+                    # Check if it's the best score
+                    best_score = min(score, best_score)
+        return best_score
 
-##tttboard ==> Tic-Tac-Toe Board
-def playGame(n, thresh):
-    tttboard = []  # this keeps record of the board, either X or O or " "
-    plays = 0  # number of time both players have played in total
+def best_move(board):
+    # Find the best move
+    best_score = -float('inf')
+    move = (-1, -1)
+    for row in range(5):
+        for col in range(5):
+            # Check if the slot is empty
+            if board[row][col] == 0:
+                # Make the move
+                board[row][col] = 1
+                # Recursively call the minimax function
+                score = minimax(board, 0, 2)
+                # Reset the board
+                board[row][col] = 0
+                # Check if it's the best score
+                if score > best_score:
+                    best_score = score
+                    move = (row, col)
+    # Return the best move
+    return move
 
-    # generate a double array(Matrix) of spaces as an initial board
-    inner = []
-    for i in range(0, n):
-        inner.append(" ")
-    for i in range(0, n):
-        tttboard.append(inner[:])
+# Player 1 is X and Player 2 is O
+player = 1
+player_name = {1: 'X', 2: 'O'}
 
-    # To check if someone has won. If anyone wins, won is going to be
-    # a  string: X wins, O wins, or DRAW
-    won = None
-
-    CPU1 = True  # boolean to check player 1 or 2
-    drawBoard(tttboard)  # displays initial empty board
-
-    while (won == None):  # if won is None, no player has won
-        if CPU1:
-            print("CPU 1")
-            avaLoc = cpuNextMove(tttboard)  # avaLoc = avaiableLocation for CPU moves
-            x = avaLoc[0]
-            y = avaLoc[1]
-            
+# Main loop
+while True:
+    # Print the board
+    print_board(board)
+    # Check for game over
+    status = is_game_over(board)
+    if status is not None:
+        if status == 0:
+            print('Draw!')
         else:
-            print("CPU 2")  # if CPU1 is false CPU is to play
-            avaLoc = cpuNextMove(tttboard)  # avaLoc = avaiableLocation for CPU moves
-            x = avaLoc[0]
-            y = avaLoc[1]
-
-        # the current player has to choose a location to play to
-
-        if CPU1:
-            tttboard[x][y] = "X"
-            if checkWin(tttboard, x, y, thresh, "X"):  # check if X has won
-                drawBoard(tttboard)
-                won = "X wins"  # won is no longer None. While loop breaks
-                continue
-        else:
-            tttboard[x][y] = "O"
-            if checkWin(tttboard, x, y, thresh, "O"):  # check if Y has won
-                drawBoard(tttboard)
-                won = "O wins"  # won is no longer None. While loop breaks
-                continue
-
-        # if nobody has won
-        drawBoard(tttboard)  # show the updated board
-        plays += 1  # increase the number of those who have played
-        CPU1 = not CPU1  # change the player to the CPU
-
-        # if people have played n^2 times, the whole board is filled.
-        # it's a draw
-        if plays == n ** 2:
-            won = "DRAW"
-
-    # this runs after won has changed to either "X wins", "O wins", or "DRAW"    
-    print(won)
-
-
-def checkWin(tttboard, x, y, tar, ch):
-    if checkrows(tttboard, x, y, tar, ch):
-        return True
-    elif checkcolumns(tttboard, x, y, tar, ch):
-        return True
-    elif checkrightdiag(tttboard, x, y, tar, ch):
-        return True
-    elif checkleftdiag(tttboard, x, y, tar, ch):
-        return True
+            print('Player {0} ({1}) wins!'.format(status, player_name[status]))
+        break
+    # Get the player's move
+    if player == 1:
+        row, col = [int(x) for x in input('Player {0} ({1}), enter your move (row, col): '.format(player, player_name[player])).split(',')]
     else:
-        return False
-
-
-def checkrows(tttboard, x, y, tar, ch):  # ch = X
-    global CPU1
-    for i in range(y - tar + 1, y + 1):
-        if i < 0:
-            continue
-        every_x = True
-        for j in range(i, i + tar):  # i = 1, tar = 3, ch = O, j = 1, 2, 3
-            if j >= len(tttboard):
-                every_x = False
-                break
-            if not tttboard[x][j] == ch:
-                every_x = False
-                break
-        if every_x:
-            return True
-
-
-def checkcolumns(tttboard, x, y, tar, ch):
-    global CPU1
-    for i in range(x - tar + 1, x + 1):
-        if i < 0:
-            continue
-        every_y = True
-        for j in range(i, i + tar):
-            if j >= len(tttboard):
-                every_y = False
-                break
-            if not tttboard[j][y] == ch:
-                every_y = False
-                break
-        if every_y:
-            return True
-
-
-def checkrightdiag(tttboard, x, y, tar, ch):
-    global CPU1
-    n = len(tttboard)
-    for i in range(0, tar):
-        if x - i < 0 or y - i < 0:
-            continue
-        every_xy = True
-        for j in range(0, tar):
-            if j + x - i >= n or j + y - i >= n:
-                every_xy = False
-                break
-            if not tttboard[j + x - i][j + y - i] == ch:
-                every_xy = False
-                break
-        if every_xy:
-            return True
-
-def checkleftdiag(tttboard, x, y, tar, ch):
-    global CPU1
-    n = len(tttboard)
-    for i in range(0, tar):
-        if x + i >= n or y - i < 0:
-            continue
-        every_xy = True
-        for j in range(0, tar):
-            if x + i - j < 0 or j + y - i >= n:
-                every_xy = False
-                break
-            if not tttboard[x + i - j][j + y - i] == ch:
-                every_xy = False
-                break
-        if every_xy:
-            return True
-
-
-def cpuNextMove(tttboard):  # Telling CPU where it can make a move/play
-    n = len(tttboard)
-    for i in range(n):
-        for j in range(n):
-            if tttboard[i][j] == " ":
-                return (i, j)  # Fills up an empty cell, Location for CPU isn't used
-
-
-playGame(6, 3)
+        row, col = best_move(board)
+    # Make the move
+    board[row][col] = player
+    # Switch players
+    player = 1 if player == 2 else 2
