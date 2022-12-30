@@ -304,18 +304,33 @@ def check_win_right_diag(tttboard,x,y,tar=5):
         if lst:
             return True, x-i+away, y-i+away 
     return False, -1, -1
-
+    
 def check_win_left_diag(tttboard,x,y,tar):
+    n = len(tttboard)
     for i in range(0,tar):
-        if x+i > 9 or y-i < 0 or y-i > 5 or x+i < 5:
+        if x+i >= n or y-i < 0:
             continue
         extracted = []
         for j in range(0,tar):
-            extracted.append(tttboard[j+x-i][j+y-i])
+            extracted.append(tttboard[j+x-i][y+i-j])
+            # extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test_wins(extracted)
         if lst:
             return True, x+i+away, y-i+away
     return False, -1, -1
+
+# def check_win_left_diag(tttboard,x,y,tar):
+#     for i in range(0,tar):
+#         if x+i > 9 or y-i < 0 or y-i > 5 or x+i < 5:
+#             continue
+#         extracted = []
+#         for j in range(0,tar):
+#             extracted.append(tttboard[j+x-i][y+i-j])
+#             # extracted.append(tttboard[j+x-i][j+y-i])
+#         lst, away = test_wins(extracted)
+#         if lst:
+#             return True, x+i+away, y-i+away
+#     return False, -1, -1
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Winning Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
@@ -500,7 +515,8 @@ def check_def_left_diag(tttboard, x, y, tar):
             continue
         extracted = []
         for j in range(0,tar):
-            extracted.append(tttboard[j+x-i][j+y-i])
+            extracted.append(tttboard[j+x-i][y+i-j])
+            # extracted.append(tttboard[j+x-i][j+y-i])
         lst, away = test_def(extracted)
         if lst:
             return True, x+i+away, y-i+away
