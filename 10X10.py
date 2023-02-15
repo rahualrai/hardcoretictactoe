@@ -1,3 +1,8 @@
+# import serial # to send data from python to arduino
+# makeblock = serial.Serial("com7")
+# print(makeblock.name)
+
+
 def draw_board(arr):
     """
     arr is the array of X, O, or " " as it is in the board
@@ -81,29 +86,32 @@ def play_game(n,thresh):
                     print("Space used. Select another.")
                 else:
                     valid_p1_location = not valid_p1_location  # correct location chosen... continue game
+            # add arduino code
+
         else:
             print("CPU") # if curr_player is false player 2 is to play 
             x,y = CPU_next_move(tttboard)  #ava_location = avaiableLocation for CPU moves
             prevx = x
             prevy = y
+            # add arduino code
 
         # the current player has to choose a location to play to
 
         if curr_player:
             tttboard[x][y] = "X"
             if check_win(tttboard, x, y, thresh, "X"): # check if X has won
-                draw_board(tttboard)
+                draw_board(tttboard) 
                 won = "P1 wins" # won is no longer None. While loop breaks
                 continue
         else:
             tttboard[x][y] = "O"
             if check_win(tttboard, x, y, thresh, "O"): # check if Y has won
-                draw_board(tttboard)
+                draw_board(tttboard) 
                 won = "CPU wins" # won is no longer None. While loop breaks
                 continue
         
         # if nobody has won
-        draw_board(tttboard) # show the updated board
+        draw_board(tttboard)
         plays += 1 # increase the number of those who have played
         curr_player = not curr_player  #change the player to the CPU
 
@@ -355,9 +363,9 @@ def check_attack(tttboard,x,y,tar): # each function returns bool, x, y
     
     return False, -1, -1
 
-def attack_check_rows(tttboard,x,y,tar):
+def attack_check_rows(tttboard,x,y,tar=5):
     for i in range(y-tar+1,y+1):
-        if i < 0 or i > 5:
+        if i<0 or i>5:
             continue
         extracted = []
         for j in range(i,i+tar): 
@@ -367,16 +375,16 @@ def attack_check_rows(tttboard,x,y,tar):
             return True, x, i+away
     return False, -1, -1
 
-def attack_check_columns(tttboard,x,y,tar):
+def attack_check_columns(tttboard,x,y,tar=5):
     for i in range(x-tar+1,x+1):
-        if i < 0:
+        if i<0 and i>5:
             continue
         extracted = []
         for j in range(i,i+tar):
             extracted.append(tttboard[j][y])
         lst, away = test(extracted)
         if lst:
-            return True, i+away, y    
+            return True, i+away, y
     return False, -1, -1
 
 def attack_check_right_diag(tttboard,x,y,tar):
@@ -386,7 +394,7 @@ def attack_check_right_diag(tttboard,x,y,tar):
         extracted = []
         for j in range(0,tar):
             extracted.append(tttboard[x-i+j][y-i+j])
-        lst, away = test_wins(extracted)
+        lst, away = test(extracted)
         if lst:
             return True, x-i+away, y-i+away 
     return False, -1, -1
@@ -402,19 +410,6 @@ def attack_check_left_diag(tttboard,x,y,tar):
         lst, away = test(extracted)
         if lst:
             return True, x+i+away, y-i+away
-    return False, -1, -1
-
-
-def check_win_right_diag(tttboard,x,y,tar=5):
-    for i in range(0,tar):
-        if x+i < 0 or x-i > 5 or y+i < 0 or y+i > 5:
-            continue
-        extracted = []
-        for j in range(0,tar):
-            extracted.append(tttboard[x+i-j][y-i+j])
-        lst, away = test_wins(extracted)
-        if lst:
-            return True, x-i+away, y-i+away 
     return False, -1, -1
     
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Attack Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
@@ -493,7 +488,7 @@ def check_def_column(tttboard, x, y, tar):
             extracted.append(tttboard[j][y])
         lst, away = test_def(extracted)
         if lst:
-            return True, i+away, y    
+            return True, i+away, y
     return False, -1, -1
 
 def check_def_right_diag(tttboard,x,y,tar):
@@ -503,62 +498,77 @@ def check_def_right_diag(tttboard,x,y,tar):
         extracted = []
         for j in range(0,tar):
             extracted.append(tttboard[x-i+j][y-i+j])
-        lst, away = test_wins(extracted)
+        lst, away = test_def(extracted)
         if lst:
             return True, x-i+away, y-i+away 
     return False, -1, -1
 
 def check_def_left_diag(tttboard, x, y, tar=5):
     for i in range(0,tar):
-        if x+i < 0 or x-i > 5 or y+i < 0 or y+i > 5:
+        if x-i > 5 or y+i > 5:
             continue
         extracted = []
         for j in range(0,tar):
             extracted.append(tttboard[x+i-j][y-i+j])
-        lst, away = test_wins(extracted)
+        lst, away = test_def(extracted)
         if lst:
-            return True, x-i+away, y-i+away 
+            return True, x-i+away, y+i+away 
     return False, -1, -1
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Defence Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Normal Starts Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+import random
 def normal_move(tttboard):
     n = len(tttboard)
-    optimum = [4,5]
-    isoptimum = True
-    isnear = True
+    optimum = [[4,4],[4,5],[5,4],[5,5]]
 
-    while isoptimum == True:
-        for i in range(len(optimum)):
-            for j in range(len(optimum)):
-                if tttboard[optimum[i]][optimum[j]] == " ":
-                    return(optimum[i],optimum[j])
-                isoptimum = False
+    for i, j in optimum:
+        if tttboard[i][j] == " ":
+            return (i ,j)
+
+    placed = False
+    while not placed:
+        i = random.randint(0,9)
+        j = random.randint(0,9)
+        if tttboard[i][j] == " ":
+            return (i,j)
+    
+
+
+    # isoptimum = True
+    # isnear = True
+
+    # while isoptimum == True:
+    #     for i in range(len(optimum)):
+    #         for j in range(len(optimum)):
+    #             if tttboard[optimum[i]][optimum[j]] == " ":
+    #                 return(optimum[i],optimum[j])
+    #             isoptimum = False
                     
                     
-    while isnear == True:
-        for i in range(n):
-            for j in range(n):
-                if tttboard[i][j] == "O":
-                    if tttboard[i+1][j] == " " :
-                        return(i+1,j)
-                    elif tttboard[i-1][j] == " ":
-                        return(i-1,j)
-                    elif tttboard[i][j+1] == " ":
-                        return(i,j+1)
-                    elif tttboard[i][j-1] == " ":
-                        return(i,j-1)
-                    elif tttboard[i+1][j+1] == " ":
-                        return(i+1,j)  
-                    elif tttboard[i-1][j-1] == " ":
-                        return(i-1,j-1)
-                    isnear = False  
+    # while isnear == True:
+    #     for i in range(n):
+    #         for j in range(n):
+    #             if tttboard[i][j] == "O":
+    #                 if tttboard[i+1][j] == " " :
+    #                     return(i+1,j)
+    #                 elif tttboard[i-1][j] == " ":
+    #                     return(i-1,j)
+    #                 elif tttboard[i][j+1] == " ":
+    #                     return(i,j+1)
+    #                 elif tttboard[i][j-1] == " ":
+    #                     return(i,j-1)
+    #                 elif tttboard[i+1][j+1] == " ":
+    #                     return(i+1,j)  
+    #                 elif tttboard[i-1][j-1] == " ":
+    #                     return(i-1,j-1)
+    #                 isnear = False  
 
-    for i in range(n):
-        for j in range(n):
-            if tttboard[i][j] == " ":
-                return (i,j) #Fills up an empty cell,  Location for CPU isn't used    
+    # for i in range(n):
+    #     for j in range(n):
+    #         if tttboard[i][j] == " ":
+    #             return (i,j) #Fills up an empty cell,  Location for CPU isn't used    
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Normal Ends Here~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 # track each player's data
@@ -583,6 +593,7 @@ def normal_move(tttboard):
 # Each list based on number-in-a-row contains a dictionary pointing directions to groups of five
 # Each group of five is an object having a starting point and missing coordinates
 # *** Coordinates in this data are stored as 10*x +y not as (x,y) for saving space
+import random
 
 class GroupThresh:
     def __init__(self,thresh,char,start):
