@@ -4,8 +4,8 @@ This is a Tic Tac Toe game that uses an Arduino board to control the game pieces
 ## Requirements
 To run this program, you will need:
 
-- Python 3.x
-- PySerial
+- Python
+- PySerial 
 - An Arduino board
 
 ## Installation
